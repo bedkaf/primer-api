@@ -1,7 +1,13 @@
-import express from "express";
+import { Router } from "express";
 import {USER_BD} from "../bbdd.js";
 
-const accoutnRoutes = express.Router();
+const accoutnRoutes = Router();
+
+//Midellware que loguea la IP
+accoutnRoutes.use((req, res, next) => {
+  console.log(req.ip);
+  next();
+});
 
 //Obtener los detalles de la cuenta
 accoutnRoutes.get('/accoutn/:guid', (req,res) => {

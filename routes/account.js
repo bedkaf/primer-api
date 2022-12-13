@@ -10,7 +10,7 @@ accoutnRoutes.use((req, res, next) => {
 });
 
 //Obtener los detalles de la cuenta
-accoutnRoutes.get('/accoutn/:guid', (req,res) => {
+accoutnRoutes.get('/:guid', (req,res) => {
   const {guid} = req.params;
   const user = USER_BD.find((element) => element.guid === guid);
   
@@ -18,7 +18,7 @@ accoutnRoutes.get('/accoutn/:guid', (req,res) => {
 });
 
 //Crear una cuenta a partir del guid y el name
-accoutnRoutes.post('/accoutn', (req,res) => {
+accoutnRoutes.post('', (req,res) => {
   const { guid, name } = req.body;
   
   if(!guid || !name) return res.state(400).send(`El identificador de usuario ${guid} ya se encuentra activo`);
@@ -35,7 +35,7 @@ accoutnRoutes.post('/accoutn', (req,res) => {
 });
 
 //Actualizar una cuenta
-accoutnRoutes.patch('/accoutn/:guid', (req,res) => {
+accoutnRoutes.patch('/:guid', (req,res) => {
   const {guid} = req.params;
   const {name} = req.body;
 
@@ -51,7 +51,7 @@ accoutnRoutes.patch('/accoutn/:guid', (req,res) => {
 });
 
 //Eliminar cuenta
-accoutnRoutes.delete('/accoutn/:guid', (req,res) => {
+accoutnRoutes.delete('/:guid', (req,res) => {
   const {guid} = req.params;
   const userIndex = USER_BD.findIndex((element) => element.guid === guid);
   USER_BD.splice(userIndex,1);

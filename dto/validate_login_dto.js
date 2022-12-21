@@ -1,31 +1,44 @@
+import { Type } from "@sinclair/typebox";
+import addFormats from "ajv-formats";
+import addErrors from "ajv-errors";
+import Ajv from "ajv";
 
-const DTO_PROPERTY_NAME = ['email', 'password'];
+const loignDTOSchema = Type.Object(
+  {
+    email: Type.String({
+      format: 'email',
+      errorMessage: {
+        Type: 'el tipo debe ser sun String',
+        format: 'debe contener un correo electronico valido',
+      },
+    }),
+    password: Type.String({
+      errorMessage: {
+        Type: 'el tipo de contraseña debe ser un String',
 
-const loignDTOSchema = {
-  type: 'object',
-  properties: {
-    email:{
-      type:'string',
-      formnat: 'email'
-    },
-    password:{type:'string'},
-    require:['email', 'password'],
-    additionalProperties: false
+      }
+    })
+  },{
+    additionalProperties: false,
+    errorMessage:{
+      additionalProperties: "el fotmato del objeto no es valido",
+    }
   }
-}
+);
+
+const ajv = new Ajv({allErrors: true});
+addFormats(ajv, ["email"]).addKeyword('kind').addKeyword('modifier');
+addErrors(ajv);
+
+const validate = ajv.compile(loignDTOSchema);
 
 const validateLoginDTO = (req, res, next) => {
   // validación de objeto
-  const loginDto =  req.body;
+  const isDTOValidate =  validate(req.body);
+  
+  if(!isDTOValidate) return res.status(400).send(ajv.errorsText(validate.errors, {separator: "\n"}));
 
-  if(typeof loginDto !== 'object') return res.status(400).send("El body no tiene formato correcto");
-
-  const bodyPropertName = Object.keys(loginDto);
-  const checkProperties = bodyPropertName.length === DTO_PROPERTY_NAME.length && 
-    bodyPropertName.every((element) => DTO_PROPERTY_NAME.includes(element));
-
-  if(!checkProperties) return res.status(400).send("el body debe contener solo email y password")
-  //validacion de las propiedades del email y la contraseña
+  next();
 };
 
 export default validateLoginDTO;

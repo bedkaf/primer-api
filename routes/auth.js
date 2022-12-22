@@ -5,7 +5,7 @@ const authRRouter = Router();
 
 // Endpoint publico (no autorizado y no atenticado)
 authRRouter.get("/publico", (req, res) => {
-  res.send("Esta es la vista del piblico");
+  res.send("Esta es la vista del publico");
 })
 
 // Endpoint autenticado

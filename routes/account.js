@@ -1,61 +1,69 @@
 import { Router } from "express";
-import {USER_BD} from "../bbdd.js";
+import userModel from "../schemas/user-schema.js";
 
 const accoutnRoutes = Router();
 
 //Midellware que loguea la IP
 accoutnRoutes.use((req, res, next) => {
-  console.log(req.ip);
-  next();
+  next(console.log(req.ip));
 });
 
 //Obtener los detalles de la cuenta
-accoutnRoutes.get('/:guid', (req,res) => {
+accoutnRoutes.get('/:guid', async (req,res) => {
   const {guid} = req.params;
-  const user = USER_BD.find((element) => element.guid === guid);
+  console.log("se esta cargando los datos");
+
+  const user = await userModel.findById(guid).exec();
   
   !user ? res.status(404).send() : res.send(user);
 });
 
 //Crear una cuenta a partir del guid y el name
-accoutnRoutes.post('', (req,res) => {
+accoutnRoutes.post('/', async (req,res) => {
+
   const { guid, name } = req.body;
-  
+
   if(!guid || !name) return res.state(400).send(`El identificador de usuario ${guid} ya se encuentra activo`);
+  
+  const user = await userModel.findById(guid).exec();
 
-  const user = USER_BD.find((element) => element.guid === guid);
-  if(user) return res.status(409).send();
+  if(user) return res.status(400).send('Este usuario ya se encuentra registrado');
 
-  USER_BD.push({
-    guid,
-    name,
-  });
+  const newUser = new userModel({ _id:guid, name});
+  await newUser.save();
 
   res.send("Cuenta creada");
 });
 
 //Actualizar una cuenta
-accoutnRoutes.patch('/:guid', (req,res) => {
+accoutnRoutes.patch('/:guid', async (req,res) => {
   const {guid} = req.params;
   const {name} = req.body;
 
   if(!name) return res.state(400).send();
 
-  const user = USER_BD.find((element) => element.guid === guid);
+  const user = await userModel.findById(guid).exec();
 
   if(!name) res.status(404).send();
   
   user.name = name;
   console.log(`Cambios echos recientemente: ${name}`);
+
+  await user.save();
+
   return res.send();
 });
 
 //Eliminar cuenta
-accoutnRoutes.delete('/:guid', (req,res) => {
+accoutnRoutes.delete('/:guid', async (req,res) => {
   const {guid} = req.params;
-  const userIndex = USER_BD.findIndex((element) => element.guid === guid);
-  USER_BD.splice(userIndex,1);
-  userIndex === -1 ? res.status(404).send() : res.send("Centa eliminada");
+  const user = await userModel.findById(guid).exec();
+
+  if(!user) return res.status(404).send("El usuario no existe");
+
+  await user.remove();
+  
+  res.send();
 });
 
 export default accoutnRoutes;
